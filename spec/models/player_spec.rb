@@ -185,4 +185,57 @@ describe Player do
       expect(Player.all).to_not include subject
     end
   end
+
+  describe "Streak" do
+    require 'debugger'
+    before :each do
+      @player = FactoryGirl.create(:player, :active => true)
+      @winning_score = {:challenged_score => 21, :challenger_score => 15}  
+      @losing_score = {:challenged_score => 15, :challenger_score => 21}  
+    end
+
+    after :each do
+      @player.destroy
+    end
+
+    it "should return 0 if player has never played" do
+      @player.streak.should eq 0
+    end
+
+    it "should show a winning streak" do
+      5.times do 
+        game = FactoryGirl.build(:game, :challenged => @player)
+        game.complete!(@winning_score)
+      end
+      @player.streak.should eq 5
+    end
+
+    it "should show a losing streak" do
+      5.times do 
+        game = FactoryGirl.build(:game, :challenged => @player)
+        game.complete!(@losing_score)
+      end
+      @player.streak.should eq -5
+    end
+
+    it "should handle a win -> lose streak change" do
+      5.times do 
+        game = FactoryGirl.build(:game, :challenged => @player)
+        game.complete!(@winning_score)
+      end
+      game = FactoryGirl.build(:game, :challenged => @player)
+      game.complete!(@losing_score)
+      @player.streak.should eq -1
+    end
+
+    it "should handle a lose -> win streak change" do
+      5.times do 
+        game = FactoryGirl.build(:game, :challenged => @player)
+        game.complete!(@losing_score)
+      end
+      game = FactoryGirl.build(:game, :challenged => @player)
+      game.complete!(@winning_score)
+      @player.streak.should eq 1
+    end
+  end
 end

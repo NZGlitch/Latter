@@ -199,6 +199,21 @@ class Player < ActiveRecord::Base
     end
   end
 
+  # Players current streak
+  #
+  # Return the players current streak
+  #
+  # The streak is returned as the set of games in the current streak
+  def streak
+    return 0 if games.empty?
+    streak_type = games.first.winner?(self)
+    streak_count = 0
+    games.each do |g|
+      break unless g.winner?(self) == streak_type
+      streak_count+=1
+    end
+    streak_type ? streak_count : -streak_count
+  end
 
   private
 
